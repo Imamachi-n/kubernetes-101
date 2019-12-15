@@ -20,7 +20,8 @@ docker-desktop   Ready    master   15m   v1.14.8
 
 ## ポッドの実行
 
-ポッドのみを動かすときは、`--restart=Never`オプションを付加。
+ポッドのみを動かすときは、`--restart=Never`オプションを付加。  
+Hello-world の Docker イメージは、標準出力した後、起動終了するため。
 
 ### hello-world コンテナの実行
 
@@ -110,4 +111,75 @@ Hello from Docker!
 ...
 
 $ kubectl delete pod hello-world
+```
+
+## コントローラによるポッドの実行
+
+### kubectl による Deployment の実行
+
+```bash
+$ kubectl create deployment --image hello-world hello-world
+deployment.apps/hello-world created
+```
+
+### デプロイメントの実行状況のリスト表示
+
+```bash
+$ kubectl get all
+NAME                               READY   STATUS             RESTARTS   AGE
+pod/hello-world-7fd49b7477-7wff4   0/1     CrashLoopBackOff   2          50s
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   33m
+
+NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/hello-world   0/1     1            0           50s
+
+NAME                                     DESIRED   CURRENT   READY   AGE
+replicaset.apps/hello-world-7fd49b7477   1         1         0       50s
+```
+
+### ポッドのログ出力
+
+```bash
+$ kubectl logs pod/hello-world-7fd49b7477-7wff4
+Hello from Docker!
+...
+```
+
+### デプロイメントの削除
+
+```bash
+$ kubectl get deployment
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+hello-world   0/1     1            0           10m
+
+$ kubectl delete deployment hello-world
+deployment.extensions "hello-world" deleted
+
+$ kubectl get all
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   44m
+```
+
+## ジョブによるポッドの実行
+
+### ジョブ制御化でのポッドの実行
+
+```bash
+$ kubectl create job hello-world --image hello-world
+job.batch/hello-world created
+
+$ kubectl get all
+NAME                    READY   STATUS      RESTARTS   AGE
+pod/hello-world-c925p   0/1     Completed   0          17s
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   49m
+
+NAME                    COMPLETIONS   DURATION   AGE
+job.batch/hello-world   1/1           6s         17s
+
+$ kubectl delete job hello-world
+job.batch "hello-world" deleted
 ```
